@@ -27,7 +27,7 @@
             android:text="Сгенерировать" />
 
         <Button
-            android:id="@+id/button3"
+            android:id="@+id/button2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Вывести различные элементы с сортировкой (по возрастанию количества)" />
@@ -36,7 +36,6 @@
             android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="TextView"
             android:textSize="20sp"
             android:textStyle="normal" />
 
