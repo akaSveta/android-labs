@@ -6,7 +6,7 @@ class ValueFrequencyAnalyzer
     {
         return List(10)
         {
-            Random.nextInt(1, 100)
+            Random.nextInt(0, 10)
         }
     }
     fun analyze(list: List<Int>): List<Pair<Int, Int>>
@@ -15,6 +15,6 @@ class ValueFrequencyAnalyzer
             .groupingBy { it }
             .eachCount()
             .map { Pair(it.key, it.value) }
-            .sortedBy { it.second }
+            .sortedByDescending { it.second }
     }
 }
