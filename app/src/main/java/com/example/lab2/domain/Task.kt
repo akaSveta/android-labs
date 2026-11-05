@@ -1,7 +1,11 @@
 package com.example.lab2.domain
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "tasks")
 data class Task(
-    val id: String,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val title: String,
     val notes: String = "",
     val isDone: Boolean = false,
