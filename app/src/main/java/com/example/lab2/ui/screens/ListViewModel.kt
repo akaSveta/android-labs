@@ -5,9 +5,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lab2.data.AppDatabase
 import com.example.lab2.domain.Task
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class ListViewModel(application: Application) : AndroidViewModel(application) {
@@ -16,22 +13,19 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
 
     val tasks = dao.getAllTasks()
 
+    suspend fun getActiveTasks(): List<Task> {
+        return dao.getActiveTasksDirectly()
+    }
+
     fun addTask(title: String, notes: String, priority: Int) {
         viewModelScope.launch {
-            dao.insertTask(
-                Task(
-                    title = title,
-                    notes = notes,
-                    listId = "6",
-                    priority = priority
-                )
-            )
+            dao.insertTask(Task(title = title, notes = notes, listId = "6", priority = priority))
         }
     }
 
     fun toggleTaskDone(task: Task) {
         viewModelScope.launch {
-            dao.updateTask(task.copy(isDone = !task.isDone))
+            dao.updateTaskStatus(task.id, task.isDone)
         }
     }
 }

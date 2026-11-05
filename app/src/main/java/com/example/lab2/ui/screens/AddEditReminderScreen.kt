@@ -10,10 +10,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.lab2.ui.components.PreviewWrapper
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -23,17 +21,20 @@ import androidx.compose.material.icons.filled.Menu
 @Composable
 fun AddEditReminderScreen(
     onCancelClick: () -> Unit,
-    onSaveClick: () -> Unit,
+    onSaveClick: (String, String) -> Unit,
     onDetailsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var title by remember { mutableStateOf("") }
+    var notes by remember { mutableStateOf("") }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = { Text("Новое напоминание", fontWeight = FontWeight.Bold) },
                 navigationIcon = { TextButton(onClick = onCancelClick) { Text("Отмена", fontSize = 16.sp) } },
-                actions = { TextButton(onClick = onSaveClick) { Text("Добавить", fontSize = 16.sp, fontWeight = FontWeight.Bold) } },
+                actions = { TextButton(onClick = { onSaveClick(title, notes) }) { Text("Добавить", fontSize = 16.sp, fontWeight = FontWeight.Bold) } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         }
@@ -46,13 +47,13 @@ fun AddEditReminderScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     TextField(
-                        value = "", onValueChange = {}, placeholder = { Text("По названию") },
+                        value = title, onValueChange = { title = it }, placeholder = { Text("По названию") },
                         colors = TextFieldDefaults.colors(focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent, focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent),
                         modifier = Modifier.fillMaxWidth()
                     )
                     HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
                     TextField(
-                        value = "", onValueChange = {}, placeholder = { Text("Заметки") },
+                        value = notes, onValueChange = { notes = it }, placeholder = { Text("Заметки") },
                         colors = TextFieldDefaults.colors(focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent, focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent),
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -103,7 +104,3 @@ fun AddEditReminderScreen(
         }
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-private fun AddEditReminderScreenPreview() { PreviewWrapper { AddEditReminderScreen(onCancelClick = {}, onSaveClick = {}, onDetailsClick = {}) } }
