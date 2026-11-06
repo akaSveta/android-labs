@@ -17,9 +17,9 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
         return dao.getActiveTasksDirectly()
     }
 
-    fun addTask(title: String, notes: String, priority: Int) {
+    fun addTask(title: String, notes: String, priority: Int, dueDate: String, dueTime: String) {
         viewModelScope.launch {
-            dao.insertTask(Task(title = title, notes = notes, listId = "6", priority = priority))
+            dao.insertTask(Task(title = title, notes = notes, listId = "6", priority = priority, dueDate = dueDate, dueTime = dueTime))
         }
     }
 

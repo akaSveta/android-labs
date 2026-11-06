@@ -1,40 +1,51 @@
 package com.example.lab2.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.background
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditReminderScreen(
+    initialTitle: String,
+    initialNotes: String,
+    initialDate: String,
+    initialTime: String,
+    onTitleChange: (String) -> Unit,
+    onNotesChange: (String) -> Unit,
     onCancelClick: () -> Unit,
-    onSaveClick: (String, String) -> Unit,
+    onSaveClick: () -> Unit,
     onDetailsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var title by remember { mutableStateOf("") }
-    var notes by remember { mutableStateOf("") }
-
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = { Text("Новое напоминание", fontWeight = FontWeight.Bold) },
-                navigationIcon = { TextButton(onClick = onCancelClick) { Text("Отмена", fontSize = 16.sp) } },
-                actions = { TextButton(onClick = { onSaveClick(title, notes) }) { Text("Добавить", fontSize = 16.sp, fontWeight = FontWeight.Bold) } },
+                navigationIcon = {
+                    TextButton(onClick = onCancelClick) {
+                        Text("Отмена", fontSize = 16.sp)
+                    }
+                },
+                actions = {
+                    TextButton(onClick = onSaveClick) {
+                        Text("Добавить", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         }
@@ -47,14 +58,28 @@ fun AddEditReminderScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     TextField(
-                        value = title, onValueChange = { title = it }, placeholder = { Text("По названию") },
-                        colors = TextFieldDefaults.colors(focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent, focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent),
+                        value = initialTitle,
+                        onValueChange = onTitleChange,
+                        placeholder = { Text("По названию") },
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
                         modifier = Modifier.fillMaxWidth()
                     )
                     HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
                     TextField(
-                        value = notes, onValueChange = { notes = it }, placeholder = { Text("Заметки") },
-                        colors = TextFieldDefaults.colors(focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent, focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent),
+                        value = initialNotes,
+                        onValueChange = onNotesChange,
+                        placeholder = { Text("Заметки") },
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -63,12 +88,22 @@ fun AddEditReminderScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Card(
-                onClick = onDetailsClick, shape = RoundedCornerShape(12.dp),
+                onClick = onDetailsClick,
+                shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 modifier = Modifier.fillMaxWidth().height(56.dp)
             ) {
                 Row(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "Подробно", fontSize = 16.sp, modifier = Modifier.weight(1f))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(text = "Подробно", fontSize = 16.sp)
+                        if (initialDate.isNotEmpty() || initialTime.isNotEmpty()) {
+                            Text(
+                                text = "$initialDate $initialTime".trim(),
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                     Text("›", fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }

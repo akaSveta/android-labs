@@ -90,7 +90,6 @@ fun ListScreen(
                             onTaskClick = {
                                 val updatedTask = task.copy(isDone = !task.isDone)
                                 displayTasks[index] = updatedTask
-
                                 viewModel.toggleTaskDone(updatedTask)
                             }
                         )
@@ -125,15 +124,29 @@ fun TaskRow(task: Task, isDone: Boolean, themeColor: Color, onTaskClick: () -> U
                     val text = when (task.priority) { 1 -> "!"; 2 -> "!!"; 3 -> "!!!"; else -> "" }
                     Text(text = text, color = themeColor, fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(end = 4.dp))
                 }
-
                 Text(
                     text = task.title,
                     fontSize = 16.sp,
                     color = if (isDone) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
                 )
             }
+
             if (task.notes.isNotEmpty() && !isDone) {
                 Text(text = task.notes, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 2.dp))
+            }
+
+            if ((task.dueDate.isNotEmpty() || task.dueTime.isNotEmpty()) && !isDone) {
+                val dateStr = task.dueDate
+                val timeStr = task.dueTime
+                val separator = if (dateStr.isNotEmpty() && timeStr.isNotEmpty()) ", " else ""
+
+                Text(
+                    text = "$dateStr$separator$timeStr",
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
             }
         }
     }

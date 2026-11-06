@@ -10,5 +10,7 @@ data class Task(
     val notes: String = "",
     val isDone: Boolean = false,
     val listId: String = "",
-    val priority: Int = 0
+    val priority: Int = 0,
+    val dueDate: String = "",
+    val dueTime: String = ""
 )
