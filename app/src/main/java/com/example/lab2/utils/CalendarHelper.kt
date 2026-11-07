@@ -28,21 +28,34 @@ fun addEventToCalendarSilently(context: Context, title: String, date: String, ti
         }
 
         val endCalendar = Calendar.getInstance().apply {
-            set(year, month, day, hour, minute + 60)
+            set(year, month, day, hour, minute + 30) // Событие длится 30 минут
         }
 
         val calendarId = getPrimaryCalendarId(context)
         if (calendarId == -1L) return
 
-        val values = ContentValues().apply {
+        val eventValues = ContentValues().apply {
             put(CalendarContract.Events.DTSTART, startCalendar.timeInMillis)
             put(CalendarContract.Events.DTEND, endCalendar.timeInMillis)
             put(CalendarContract.Events.TITLE, title)
             put(CalendarContract.Events.CALENDAR_ID, calendarId)
             put(CalendarContract.Events.EVENT_TIMEZONE, TimeZone.getDefault().id)
+            put(CalendarContract.Events.HAS_ALARM, 1) // Разрешаем уведомления
         }
 
-        context.contentResolver.insert(CalendarContract.Events.CONTENT_URI, values)
+        val eventUri = context.contentResolver.insert(CalendarContract.Events.CONTENT_URI, eventValues)
+
+        if (eventUri != null) {
+            val eventId = eventUri.lastPathSegment?.toLong() ?: return
+
+            val reminderValues = ContentValues().apply {
+                put(CalendarContract.Reminders.EVENT_ID, eventId)
+                put(CalendarContract.Reminders.MINUTES, 0)
+                put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT)
+            }
+
+            context.contentResolver.insert(CalendarContract.Reminders.CONTENT_URI, reminderValues)
+        }
 
     } catch (e: Exception) {
         println("Ошибка добавления в календарь: ${e.message}")
