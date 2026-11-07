@@ -1,7 +1,11 @@
 package com.example.lab2.ui.screens
 
+import android.Manifest
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -22,11 +26,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import com.example.lab2.utils.addEventToCalendarSilently
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
+    title: String,
     initialDate: String,
     initialTime: String,
     onBackClick: () -> Unit,
@@ -43,8 +50,27 @@ fun DetailScreen(
     var priority by remember { mutableIntStateOf(0) }
     var isMenuExpanded by remember { mutableStateOf(false) }
 
-    val datePickerDialog = remember {
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val allGranted = permissions.values.all { it }
+        if (allGranted) {
+            if (initialDate.isNotEmpty()) {
+                addEventToCalendarSilently(context, title, initialDate, initialTime)
+            }
+        }
+    }
+
+    val datePickerDialog = remember(initialDate) {
         val calendar = Calendar.getInstance()
+        if (initialDate.isNotEmpty()) {
+            try {
+                val parts = initialDate.split(".")
+                if (parts.size == 3) {
+                    calendar.set(parts[2].toInt(), parts[1].toInt() - 1, parts[0].toInt())
+                }
+            } catch (e: Exception) { }
+        }
         DatePickerDialog(
             context,
             { _, year, month, dayOfMonth ->
@@ -56,8 +82,17 @@ fun DetailScreen(
         )
     }
 
-    val timePickerDialog = remember {
+    val timePickerDialog = remember(initialTime) {
         val calendar = Calendar.getInstance()
+        if (initialTime.isNotEmpty()) {
+            try {
+                val parts = initialTime.split(":")
+                if (parts.size == 2) {
+                    calendar.set(Calendar.HOUR_OF_DAY, parts[0].toInt())
+                    calendar.set(Calendar.MINUTE, parts[1].toInt())
+                }
+            } catch (e: Exception) { }
+        }
         TimePickerDialog(
             context,
             { _, hourOfDay, minute ->
@@ -82,7 +117,20 @@ fun DetailScreen(
                     }
                 },
                 actions = {
-                    TextButton(onClick = { onSaveClick(priority) }) {
+                    TextButton(onClick = {
+                        val hasRead = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED
+                        val hasWrite = ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED
+
+                        if (hasRead && hasWrite) {
+                            if (initialDate.isNotEmpty()) {
+                                addEventToCalendarSilently(context, title, initialDate, initialTime)
+                            }
+                        } else {
+                            permissionLauncher.launch(arrayOf(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR))
+                        }
+
+                        onSaveClick(priority)
+                    }) {
                         Text("Добавить", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
                 },

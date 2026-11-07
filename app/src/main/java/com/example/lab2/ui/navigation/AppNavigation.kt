@@ -80,6 +80,7 @@ fun AppNavigation() {
 
         composable("details") {
             DetailScreen(
+                title = tempTitle,
                 initialDate = tempDate,
                 initialTime = tempTime,
                 onBackClick = { navController.popBackStack() },
