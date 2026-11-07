@@ -103,9 +103,19 @@ fun ListScreen(
 
 @Composable
 fun TaskRow(task: Task, isDone: Boolean, themeColor: Color, onTaskClick: () -> Unit) {
-    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-
-        Box(modifier = Modifier.size(22.dp).background(Color.Transparent, shape = CircleShape).clickable { onTaskClick() }.padding(2.dp)) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(22.dp)
+                .background(Color.Transparent, shape = CircleShape)
+                .clickable { onTaskClick() }
+                .padding(2.dp)
+        ) {
             Surface(
                 shape = CircleShape,
                 color = if (isDone) themeColor else Color.Transparent,
@@ -118,21 +128,36 @@ fun TaskRow(task: Task, isDone: Boolean, themeColor: Color, onTaskClick: () -> U
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (task.priority > 0 && !isDone) {
-                    val text = when (task.priority) { 1 -> "!"; 2 -> "!!"; 3 -> "!!!"; else -> "" }
-                    Text(text = text, color = themeColor, fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(end = 4.dp))
-                }
-                Text(
-                    text = task.title,
-                    fontSize = 16.sp,
-                    color = if (isDone) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
-                )
+        if (task.priority > 0 && !isDone) {
+            val text = when (task.priority) {
+                1 -> "!"
+                2 -> "!!"
+                3 -> "!!!"
+                else -> ""
             }
+            Text(
+                text = text,
+                color = themeColor,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                modifier = Modifier.padding(end = 6.dp)
+            )
+        }
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = task.title,
+                fontSize = 16.sp,
+                color = if (isDone) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
+            )
 
             if (task.notes.isNotEmpty() && !isDone) {
-                Text(text = task.notes, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 2.dp))
+                Text(
+                    text = task.notes,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 2.dp)
+                )
             }
 
             if ((task.dueDate.isNotEmpty() || task.dueTime.isNotEmpty()) && !isDone) {

@@ -32,7 +32,7 @@ fun DetailScreen(
     onBackClick: () -> Unit,
     onDateSelected: (String) -> Unit,
     onTimeSelected: (String) -> Unit,
-    onSaveClick: () -> Unit,
+    onSaveClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -82,7 +82,7 @@ fun DetailScreen(
                     }
                 },
                 actions = {
-                    TextButton(onClick = onSaveClick) {
+                    TextButton(onClick = { onSaveClick(priority) }) {
                         Text("Добавить", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
                 },

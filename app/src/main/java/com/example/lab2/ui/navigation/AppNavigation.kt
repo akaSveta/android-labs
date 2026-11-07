@@ -16,18 +16,20 @@ fun AppNavigation() {
     var tempNotes by remember { mutableStateOf("") }
     var tempDate by remember { mutableStateOf("") }
     var tempTime by remember { mutableStateOf("") }
+    var tempPriority by remember { mutableIntStateOf(0) }
 
     val saveAndGoBack = {
         if (tempTitle.isNotBlank()) {
             listViewModel.addTask(
                 title = tempTitle,
                 notes = tempNotes,
-                priority = 0,
+                priority = tempPriority,
                 dueDate = tempDate,
                 dueTime = tempTime
             )
             tempTitle = ""
             tempNotes = ""
+            tempPriority = 0
             tempDate = ""
             tempTime = ""
             navController.popBackStack("home", inclusive = false)
@@ -83,7 +85,10 @@ fun AppNavigation() {
                 onBackClick = { navController.popBackStack() },
                 onDateSelected = { tempDate = it },
                 onTimeSelected = { tempTime = it },
-                onSaveClick = { saveAndGoBack() }
+                onSaveClick = { priority ->
+                    tempPriority = priority
+                    saveAndGoBack()
+                }
             )
         }
     }
