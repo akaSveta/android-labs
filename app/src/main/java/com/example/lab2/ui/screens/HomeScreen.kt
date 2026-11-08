@@ -11,25 +11,53 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lab2.data.MockData
+import com.example.lab2.domain.Task
 import com.example.lab2.ui.components.MyListRow
-import com.example.lab2.ui.components.PreviewWrapper
 import com.example.lab2.ui.components.SmallListCard
+import java.util.Calendar
+import java.util.Locale
 
 @Composable
 fun HomeScreen(
-    onListClick: () -> Unit,
+    viewModel: ListViewModel,
+    onListClick: (String, String, Long) -> Unit,
     onAddClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var allTasks by remember { mutableStateOf<List<Task>>(emptyList()) }
+    var isLoaded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        allTasks = viewModel.getAllTasksForCount()
+        isLoaded = true
+    }
+
+    fun getCount(listId: String): Int {
+        if (!isLoaded) return 0
+
+        val todayCalendar = Calendar.getInstance()
+        val todayStr = String.format(Locale.getDefault(), "%02d.%02d.%d", todayCalendar.get(Calendar.DAY_OF_MONTH), todayCalendar.get(Calendar.MONTH) + 1, todayCalendar.get(Calendar.YEAR))
+        val todayStrNoZero = "${todayCalendar.get(Calendar.DAY_OF_MONTH)}.${todayCalendar.get(Calendar.MONTH) + 1}.${todayCalendar.get(Calendar.YEAR)}"
+
+        return when (listId) {
+            "1" -> allTasks.count { !it.isDone && (it.dueDate == todayStr || it.dueDate == todayStrNoZero) }
+            "2" -> allTasks.count { !it.isDone && it.dueDate.isNotEmpty() }
+            "3" -> allTasks.count { !it.isDone }
+            "4" -> allTasks.count { !it.isDone && it.priority > 0 }
+            "5" -> allTasks.count { it.isDone }
+            "6" -> allTasks.count { !it.isDone && it.listId == "6" }
+            else -> 0
+        }
+    }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface,
@@ -85,7 +113,10 @@ fun HomeScreen(
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     rowItems.forEach { list ->
                         Box(modifier = Modifier.weight(1f)) {
-                            SmallListCard(list = list, onClick = onListClick)
+                            val realCount = getCount(list.id)
+                            val updatedList = list.copy(taskCount = realCount)
+
+                            SmallListCard(list = updatedList, onClick = { onListClick(list.id, list.title, list.iconColor) })
                         }
                     }
                     if (rowItems.size == 1) Spacer(modifier = Modifier.weight(1f))
@@ -98,14 +129,13 @@ fun HomeScreen(
             Spacer(Modifier.height(12.dp))
 
             MockData.myLists.forEach { list ->
-                MyListRow(list, onClick = onListClick)
+                val realCount = getCount(list.id)
+                val updatedList = list.copy(taskCount = realCount)
+
+                MyListRow(list = updatedList, onClick = { onListClick(list.id, list.title, list.iconColor) })
                 Spacer(Modifier.height(8.dp))
             }
             Spacer(Modifier.height(80.dp))
         }
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-private fun HomeScreenPreview() { PreviewWrapper { HomeScreen(onListClick = {}, onAddClick = {}) } }

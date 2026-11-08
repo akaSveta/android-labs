@@ -25,21 +25,26 @@ import com.example.lab2.domain.Task
 @Composable
 fun ListScreen(
     viewModel: ListViewModel,
+    listId: String,
+    listTitle: String,
+    listColor: Long,
     onBackClick: () -> Unit,
     onAddClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val themeColor = Color(0xFFFF9F0A)
+    val themeColor = Color(listColor)
 
     val displayTasks = remember { mutableStateListOf<Task>() }
     var isLoading by remember { mutableStateOf(true) }
 
-    LaunchedEffect(Unit) {
-        val activeTasks = viewModel.getActiveTasks()
+    LaunchedEffect(listId) {
+        val activeTasks = viewModel.getFilteredTasks(listId)
         displayTasks.clear()
         displayTasks.addAll(activeTasks)
         isLoading = false
     }
+
+    val showFab = listId == "1" || listId == "4" || listId == "6"
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -58,19 +63,28 @@ fun ListScreen(
             )
         },
         floatingActionButton = {
-            Row(modifier = Modifier.padding(start = 16.dp, bottom = 16.dp).clickable { onAddClick() }, verticalAlignment = Alignment.CenterVertically) {
-                FloatingActionButton(
-                    onClick = onAddClick, containerColor = themeColor, contentColor = Color.White,
-                    shape = CircleShape, modifier = Modifier.size(40.dp)
-                ) { Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(24.dp)) }
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Напоминание", color = themeColor, fontSize = 18.sp, fontWeight = FontWeight.Medium)
+            if (showFab) {
+                Row(modifier = Modifier.padding(start = 16.dp, bottom = 16.dp).clickable { onAddClick() }, verticalAlignment = Alignment.CenterVertically) {
+                    FloatingActionButton(
+                        onClick = onAddClick, containerColor = themeColor, contentColor = Color.White,
+                        shape = CircleShape, modifier = Modifier.size(40.dp)
+                    ) { Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(24.dp)) }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Напоминание", color = themeColor, fontSize = 18.sp, fontWeight = FontWeight.Medium)
+                }
             }
         },
         floatingActionButtonPosition = FabPosition.Start
     ) { paddingValues ->
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-            Text("Напоминания", fontSize = 34.sp, fontWeight = FontWeight.Bold, color = themeColor, modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp))
+
+            Text(
+                text = listTitle,
+                fontSize = 34.sp,
+                fontWeight = FontWeight.Bold,
+                color = themeColor,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+            )
 
             if (isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -78,7 +92,7 @@ fun ListScreen(
                 }
             } else if (displayTasks.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Все напоминания завершены", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Нет напоминаний", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 100.dp)) {
@@ -88,9 +102,11 @@ fun ListScreen(
                             isDone = task.isDone,
                             themeColor = themeColor,
                             onTaskClick = {
-                                val updatedTask = task.copy(isDone = !task.isDone)
-                                displayTasks[index] = updatedTask
-                                viewModel.toggleTaskDone(updatedTask)
+                                if (listId != "5") {
+                                    val updatedTask = task.copy(isDone = !task.isDone)
+                                    displayTasks[index] = updatedTask
+                                    viewModel.toggleTaskDone(updatedTask)
+                                }
                             }
                         )
                         HorizontalDivider(modifier = Modifier.padding(start = 52.dp), color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))

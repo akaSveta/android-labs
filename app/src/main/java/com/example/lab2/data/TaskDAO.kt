@@ -19,4 +19,7 @@ interface TaskDao {
 
     @Query("UPDATE tasks SET isDone = :isDone WHERE id = :taskId")
     suspend fun updateTaskStatus(taskId: Long, isDone: Boolean)
+
+    @Query("SELECT * FROM tasks ORDER BY priority DESC, title ASC")
+    suspend fun getAllTasksForFiltering(): List<Task>
 }

@@ -11,10 +11,48 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
     private val db = AppDatabase.getDatabase(application)
     private val dao = db.taskDao()
 
-    val tasks = dao.getAllTasks()
-
-    suspend fun getActiveTasks(): List<Task> {
+    suspend fun getAllTasks(): List<Task> {
         return dao.getActiveTasksDirectly()
+    }
+
+    suspend fun getFilteredTasks(listId: String): List<Task> {
+        val allTasks = dao.getAllTasksForFiltering()
+
+        val todayCalendar = java.util.Calendar.getInstance()
+        val todayStr = String.format(
+            java.util.Locale.getDefault(),
+            "%02d.%02d.%d",
+            todayCalendar.get(java.util.Calendar.DAY_OF_MONTH),
+            todayCalendar.get(java.util.Calendar.MONTH) + 1,
+            todayCalendar.get(java.util.Calendar.YEAR)
+        )
+
+        val todayStrNoZero = "${todayCalendar.get(java.util.Calendar.DAY_OF_MONTH)}.${todayCalendar.get(java.util.Calendar.MONTH) + 1}.${todayCalendar.get(java.util.Calendar.YEAR)}"
+
+        return when (listId) {
+            "1" -> {
+                allTasks.filter { task ->
+                    if (task.isDone) return@filter false
+                    task.dueDate == todayStr || task.dueDate == todayStrNoZero
+                }
+            }
+            "2" -> {
+                allTasks.filter { task ->
+                    if (task.isDone) return@filter false
+                    task.dueDate.isNotEmpty() && !task.isDone
+                }
+            }
+            "4" -> {
+                allTasks.filter { it.priority > 0 && !it.isDone }
+            }
+            "5" -> {
+                allTasks.filter { it.isDone }
+            }
+            "3", "6" -> {
+                allTasks.filter { !it.isDone }
+            }
+            else -> allTasks.filter { !it.isDone }
+        }
     }
 
     fun addTask(title: String, notes: String, priority: Int, dueDate: String, dueTime: String) {
@@ -27,5 +65,9 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             dao.updateTaskStatus(task.id, task.isDone)
         }
+    }
+
+    suspend fun getAllTasksForCount(): List<Task> {
+        return dao.getAllTasksForFiltering()
     }
 }
