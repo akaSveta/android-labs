@@ -44,7 +44,7 @@ fun ListScreen(
         isLoading = false
     }
 
-    val showFab = listId == "1" || listId == "4" || listId == "6"
+    val showFab = listId != "2" && listId != "3" && listId != "5"
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
