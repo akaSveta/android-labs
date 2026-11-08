@@ -53,7 +53,8 @@ fun AppNavigation() {
                     tempListId = "6"; tempListTitle = "Напоминания"; tempListColor = 0xFFFF9F0A; tempListIcon = "Menu"
                     navController.navigate("add")
                 },
-                onAddListClick = { navController.navigate("add_list") }
+                onAddListClick = { navController.navigate("add_list") },
+                onSearchClick = { navController.navigate("search") }
             )
         }
 
@@ -134,6 +135,13 @@ fun AppNavigation() {
                     tempListId = id; tempListTitle = title; tempListColor = color; tempListIcon = iconName
                     navController.popBackStack()
                 }
+            )
+        }
+
+        composable("search") {
+            SearchScreen(
+                viewModel = listViewModel,
+                onBackClick = { navController.popBackStack() }
             )
         }
     }

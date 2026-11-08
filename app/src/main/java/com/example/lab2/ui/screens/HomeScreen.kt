@@ -48,6 +48,7 @@ fun HomeScreen(
     onListClick: (String, String, Long) -> Unit,
     onAddClick: () -> Unit,
     onAddListClick: () -> Unit,
+    onSearchClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var allTasks by remember { mutableStateOf<List<Task>>(emptyList()) }
@@ -114,18 +115,21 @@ fun HomeScreen(
                 }
             }
 
-            OutlinedTextField(
-                value = "", onValueChange = {}, modifier = Modifier.fillMaxWidth().height(48.dp),
-                placeholder = { Text("Поиск", fontSize = 14.sp) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(20.dp)) },
+            Card(
+                onClick = onSearchClick,
                 shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    focusedBorderColor = Color.Transparent, unfocusedBorderColor = Color.Transparent
-                ),
-                singleLine = true
-            )
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                modifier = Modifier.fillMaxWidth().height(48.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Поиск", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                }
+            }
 
             Spacer(Modifier.height(24.dp))
 

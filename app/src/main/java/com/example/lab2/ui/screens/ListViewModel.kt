@@ -75,4 +75,12 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
             dao.updateTaskStatus(task.id, task.isDone)
         }
     }
+
+    suspend fun searchTasks(query: String): List<Task> {
+        val allTasks = dao.getAllTasksForFiltering()
+        return allTasks.filter {
+            it.title.contains(query, ignoreCase = true) ||
+                    it.notes.contains(query, ignoreCase = true)
+        }
+    }
 }
