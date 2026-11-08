@@ -46,7 +46,8 @@ fun AppNavigation() {
                     tempTime = ""
                     tempPriority = 0
                     navController.navigate("add")
-                }
+                },
+                onAddListClick = { navController.navigate("add_list") }
             )
         }
 
@@ -104,6 +105,16 @@ fun AppNavigation() {
                 onSaveClick = { priority ->
                     tempPriority = priority
                     saveAndGoBack()
+                }
+            )
+        }
+
+        composable("add_list") {
+            AddListScreen(
+                onCancelClick = { navController.popBackStack() },
+                onSaveClick = { title, color, iconName ->
+                    listViewModel.addTaskList(title, color, iconName)
+                    navController.popBackStack()
                 }
             )
         }

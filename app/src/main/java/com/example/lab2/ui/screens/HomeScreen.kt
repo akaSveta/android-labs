@@ -7,33 +7,53 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lab2.data.MockData
 import com.example.lab2.domain.Task
+import com.example.lab2.domain.TaskList
 import com.example.lab2.ui.components.MyListRow
 import com.example.lab2.ui.components.SmallListCard
 import java.util.Calendar
 import java.util.Locale
+
+fun getIconByName(name: String): ImageVector {
+    return when (name) {
+        "Menu" -> Icons.Default.Menu
+        "List" -> Icons.Default.List
+        "Star" -> Icons.Default.Star
+        "Favorite" -> Icons.Default.Favorite
+        "Home" -> Icons.Default.Home
+        "Person" -> Icons.Default.Person
+        "ShoppingCart" -> Icons.Default.ShoppingCart
+        "DateRange" -> Icons.Default.DateRange
+        "Email" -> Icons.Default.Email
+        "Phone" -> Icons.Default.Phone
+        "Settings" -> Icons.Default.Settings
+        else -> Icons.Default.Menu
+    }
+}
 
 @Composable
 fun HomeScreen(
     viewModel: ListViewModel,
     onListClick: (String, String, Long) -> Unit,
     onAddClick: () -> Unit,
+    onAddListClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var allTasks by remember { mutableStateOf<List<Task>>(emptyList()) }
     var isLoaded by remember { mutableStateOf(false) }
+
+    val userLists by viewModel.taskLists.collectAsState(initial = emptyList())
 
     LaunchedEffect(Unit) {
         allTasks = viewModel.getAllTasksForCount()
@@ -54,7 +74,7 @@ fun HomeScreen(
             "4" -> allTasks.count { !it.isDone && it.priority > 0 }
             "5" -> allTasks.count { it.isDone }
             "6" -> allTasks.count { !it.isDone && it.listId == "6" }
-            else -> 0
+            else -> allTasks.count { !it.isDone && it.listId == listId }
         }
     }
 
@@ -79,7 +99,7 @@ fun HomeScreen(
                 }
                 Text(
                     "Добавить", color = MaterialTheme.colorScheme.primary, fontSize = 18.sp, fontWeight = FontWeight.Medium,
-                    modifier = Modifier.clickable { /* Пока пусто */ }.padding(8.dp)
+                    modifier = Modifier.clickable { onAddListClick() }.padding(8.dp)
                 )
             }
         },
@@ -89,7 +109,7 @@ fun HomeScreen(
             modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 16.dp).verticalScroll(rememberScrollState())
         ) {
             Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 8.dp), horizontalArrangement = Arrangement.End) {
-                IconButton(onClick = { /* TODO */ }) {
+                IconButton(onClick = { /* TODO: Настройки */ }) {
                     Icon(Icons.Default.Settings, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(28.dp))
                 }
             }
@@ -128,13 +148,26 @@ fun HomeScreen(
             Text("Мои списки", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             Spacer(Modifier.height(12.dp))
 
-            MockData.myLists.forEach { list ->
-                val realCount = getCount(list.id)
-                val updatedList = list.copy(taskCount = realCount)
-
-                MyListRow(list = updatedList, onClick = { onListClick(list.id, list.title, list.iconColor) })
+            val baseMyList = MockData.myLists.firstOrNull { it.id == "6" }
+            if (baseMyList != null) {
+                val realCount = getCount("6")
+                val updatedList = baseMyList.copy(taskCount = realCount)
+                MyListRow(list = updatedList, onClick = { onListClick(updatedList.id, updatedList.title, updatedList.iconColor) })
                 Spacer(Modifier.height(8.dp))
             }
+
+            userLists.forEach { listEntity ->
+                val list = TaskList(
+                    id = listEntity.id.toString(),
+                    title = listEntity.title,
+                    iconColor = listEntity.color,
+                    taskCount = getCount(listEntity.id.toString()),
+                    icon = getIconByName(listEntity.iconName)
+                )
+                MyListRow(list = list, onClick = { onListClick(list.id, list.title, list.iconColor) })
+                Spacer(Modifier.height(8.dp))
+            }
+
             Spacer(Modifier.height(80.dp))
         }
     }

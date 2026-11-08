@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import com.example.lab2.domain.Task
+import com.example.lab2.domain.TaskListEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -22,4 +23,10 @@ interface TaskDao {
 
     @Query("SELECT * FROM tasks ORDER BY priority DESC, title ASC")
     suspend fun getAllTasksForFiltering(): List<Task>
+
+    @Query("SELECT * FROM task_lists ORDER BY id ASC")
+    fun getAllTaskLists(): Flow<List<TaskListEntity>>
+
+    @Insert
+    suspend fun insertTaskList(taskList: TaskListEntity)
 }
