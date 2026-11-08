@@ -29,4 +29,7 @@ interface TaskDao {
 
     @Insert
     suspend fun insertTaskList(taskList: TaskListEntity)
+
+    @Query("SELECT MAX(id) FROM task_lists")
+    suspend fun getMaxTaskListId(): Long?
 }

@@ -19,7 +19,18 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
 
     fun addTaskList(title: String, color: Long, iconName: String) {
         viewModelScope.launch {
-            dao.insertTaskList(TaskListEntity(title = title, color = color, iconName = iconName))
+            val maxId = dao.getMaxTaskListId()
+
+            val nextId = if (maxId == null || maxId < 6) 7L else maxId + 1
+
+            dao.insertTaskList(
+                TaskListEntity(
+                    id = nextId,
+                    title = title,
+                    color = color,
+                    iconName = iconName
+                )
+            )
         }
     }
 
@@ -29,15 +40,8 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
 
     suspend fun getFilteredTasks(listId: String): List<Task> {
         val allTasks = dao.getAllTasksForFiltering()
-
         val todayCalendar = Calendar.getInstance()
-        val todayStr = String.format(
-            Locale.getDefault(),
-            "%02d.%02d.%d",
-            todayCalendar.get(Calendar.DAY_OF_MONTH),
-            todayCalendar.get(Calendar.MONTH) + 1,
-            todayCalendar.get(Calendar.YEAR)
-        )
+        val todayStr = String.format(Locale.getDefault(), "%02d.%02d.%d", todayCalendar.get(Calendar.DAY_OF_MONTH), todayCalendar.get(Calendar.MONTH) + 1, todayCalendar.get(Calendar.YEAR))
         val todayStrNoZero = "${todayCalendar.get(Calendar.DAY_OF_MONTH)}.${todayCalendar.get(Calendar.MONTH) + 1}.${todayCalendar.get(Calendar.YEAR)}"
 
         return when (listId) {
@@ -51,13 +55,13 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun addTask(title: String, notes: String, priority: Int, dueDate: String, dueTime: String, listId: String = "6") {
+    fun addTask(title: String, notes: String, priority: Int, dueDate: String, dueTime: String, targetListId: String) {
         viewModelScope.launch {
             dao.insertTask(
                 Task(
                     title = title,
                     notes = notes,
-                    listId = listId,
+                    listId = targetListId,
                     priority = priority,
                     dueDate = dueDate,
                     dueTime = dueTime
