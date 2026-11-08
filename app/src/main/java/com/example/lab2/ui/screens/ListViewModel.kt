@@ -39,16 +39,19 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
             "1" -> allTasks.filter { !it.isDone && (it.dueDate == todayStr || it.dueDate == todayStrNoZero) }
             "2" -> allTasks.filter { !it.isDone && it.dueDate.isNotEmpty() }
             "3" -> allTasks.filter { !it.isDone }
-            "4" -> allTasks.filter { !it.isDone && it.priority > 0 }
+            "4" -> allTasks.filter { !it.isDone && it.isFlagged }
             "5" -> allTasks.filter { it.isDone }
             "6" -> allTasks.filter { !it.isDone && it.listId == "6" }
             else -> allTasks.filter { !it.isDone && it.listId == listId }
         }
     }
 
-    fun addTask(title: String, notes: String, priority: Int, dueDate: String, dueTime: String, targetListId: String) {
+    fun addTask(title: String, notes: String, priority: Int, dueDate: String, dueTime: String, targetListId: String, isFlagged: Boolean) {
         viewModelScope.launch {
-            dao.insertTask(Task(title = title, notes = notes, listId = targetListId, priority = priority, dueDate = dueDate, dueTime = dueTime))
+            dao.insertTask(Task(
+                title = title, notes = notes, listId = targetListId, priority = priority,
+                dueDate = dueDate, dueTime = dueTime, isFlagged = isFlagged
+            ))
         }
     }
 

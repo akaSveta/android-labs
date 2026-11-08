@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,13 +25,8 @@ import com.example.lab2.domain.Task
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListScreen(
-    viewModel: ListViewModel,
-    listId: String,
-    listTitle: String,
-    listColor: Long,
-    onBackClick: () -> Unit,
-    onAddClick: () -> Unit,
-    onTaskClick: (Task) -> Unit,
+    viewModel: ListViewModel, listId: String, listTitle: String, listColor: Long,
+    onBackClick: () -> Unit, onAddClick: () -> Unit, onTaskClick: (Task) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val themeColor = Color(listColor)
@@ -39,9 +35,7 @@ fun ListScreen(
 
     LaunchedEffect(listId) {
         val activeTasks = viewModel.getFilteredTasks(listId)
-        displayTasks.clear()
-        displayTasks.addAll(activeTasks)
-        isLoading = false
+        displayTasks.clear(); displayTasks.addAll(activeTasks); isLoading = false
     }
 
     val showFab = listId != "2" && listId != "3" && listId != "5"
@@ -65,10 +59,9 @@ fun ListScreen(
         floatingActionButton = {
             if (showFab) {
                 Row(modifier = Modifier.padding(start = 16.dp, bottom = 16.dp).clickable { onAddClick() }, verticalAlignment = Alignment.CenterVertically) {
-                    FloatingActionButton(
-                        onClick = onAddClick, containerColor = themeColor, contentColor = Color.White,
-                        shape = CircleShape, modifier = Modifier.size(40.dp)
-                    ) { Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(24.dp)) }
+                    FloatingActionButton(onClick = onAddClick, containerColor = themeColor, contentColor = Color.White, shape = CircleShape, modifier = Modifier.size(40.dp)) {
+                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(24.dp))
+                    }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Напоминание", color = themeColor, fontSize = 18.sp, fontWeight = FontWeight.Medium)
                 }
@@ -77,29 +70,16 @@ fun ListScreen(
         floatingActionButtonPosition = FabPosition.Start
     ) { paddingValues ->
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-            Text(
-                text = listTitle,
-                fontSize = 34.sp,
-                fontWeight = FontWeight.Bold,
-                color = themeColor,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
-            )
+            Text(text = listTitle, fontSize = 34.sp, fontWeight = FontWeight.Bold, color = themeColor, modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp))
 
             if (isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = themeColor)
-                }
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = themeColor) }
             } else if (displayTasks.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Нет напоминаний", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Нет напоминаний", color = MaterialTheme.colorScheme.onSurfaceVariant) }
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 100.dp)) {
                     itemsIndexed(displayTasks) { index, task ->
-                        TaskRow(
-                            task = task,
-                            isDone = task.isDone,
-                            themeColor = themeColor,
+                        TaskRow(task = task, isDone = task.isDone, themeColor = themeColor,
                             onTaskClick = { onTaskClick(task) },
                             onCheckboxClick = {
                                 if (listId != "5") {
@@ -120,27 +100,15 @@ fun ListScreen(
 @Composable
 fun TaskRow(task: Task, isDone: Boolean, themeColor: Color, onTaskClick: () -> Unit, onCheckboxClick: () -> Unit) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onTaskClick() }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+        modifier = Modifier.fillMaxWidth().clickable { onTaskClick() }.padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(22.dp)
-                .background(Color.Transparent, shape = CircleShape)
-                .clickable { onCheckboxClick() }
-                .padding(2.dp)
-        ) {
+        Box(modifier = Modifier.size(22.dp).background(Color.Transparent, shape = CircleShape).clickable { onCheckboxClick() }.padding(2.dp)) {
             Surface(
-                shape = CircleShape,
-                color = if (isDone) themeColor else Color.Transparent,
+                shape = CircleShape, color = if (isDone) themeColor else Color.Transparent,
                 border = BorderStroke(1.5.dp, if (isDone) themeColor else MaterialTheme.colorScheme.onSurfaceVariant),
                 modifier = Modifier.fillMaxSize()
-            ) {
-                if (isDone) Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.padding(3.dp))
-            }
+            ) { if (isDone) Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.padding(3.dp)) }
         }
 
         Spacer(modifier = Modifier.width(12.dp))
@@ -151,11 +119,7 @@ fun TaskRow(task: Task, isDone: Boolean, themeColor: Color, onTaskClick: () -> U
         }
 
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = task.title,
-                fontSize = 16.sp,
-                color = if (isDone) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
-            )
+            Text(text = task.title, fontSize = 16.sp, color = if (isDone) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface)
             if (task.notes.isNotEmpty() && !isDone) {
                 Text(text = task.notes, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 2.dp))
             }
@@ -163,6 +127,15 @@ fun TaskRow(task: Task, isDone: Boolean, themeColor: Color, onTaskClick: () -> U
                 val separator = if (task.dueDate.isNotEmpty() && task.dueTime.isNotEmpty()) ", " else ""
                 Text(text = "${task.dueDate}$separator${task.dueTime}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 4.dp))
             }
+        }
+
+        if (task.isFlagged && !isDone) {
+            Icon(
+                imageVector = Icons.Default.Flag,
+                contentDescription = null,
+                tint = themeColor,
+                modifier = Modifier.size(32.dp).padding(start = 8.dp)
+            )
         }
     }
 }

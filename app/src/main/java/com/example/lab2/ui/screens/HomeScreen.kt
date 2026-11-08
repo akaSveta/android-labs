@@ -72,7 +72,7 @@ fun HomeScreen(
             "1" -> allTasks.count { !it.isDone && (it.dueDate == todayStr || it.dueDate == todayStrNoZero) }
             "2" -> allTasks.count { !it.isDone && it.dueDate.isNotEmpty() }
             "3" -> allTasks.count { !it.isDone }
-            "4" -> allTasks.count { !it.isDone && it.priority > 0 }
+            "4" -> allTasks.count { !it.isDone && it.isFlagged }
             "5" -> allTasks.count { it.isDone }
             "6" -> allTasks.count { !it.isDone && it.listId == "6" }
             else -> allTasks.count { !it.isDone && it.listId == listId }

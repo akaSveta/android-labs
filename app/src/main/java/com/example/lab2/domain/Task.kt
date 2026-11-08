@@ -12,5 +12,6 @@ data class Task(
     val listId: String = "",
     val priority: Int = 0,
     val dueDate: String = "",
-    val dueTime: String = ""
+    val dueTime: String = "",
+    val isFlagged: Boolean = false
 )

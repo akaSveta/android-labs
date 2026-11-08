@@ -36,17 +36,18 @@ fun DetailScreen(
     title: String,
     initialDate: String,
     initialTime: String,
+    initialFlagged: Boolean,
     onBackClick: () -> Unit,
     onDateSelected: (String) -> Unit,
     onTimeSelected: (String) -> Unit,
-    onSaveClick: (Int) -> Unit,
+    onSaveClick: (Int, Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
 
     var isDateEnabled by remember { mutableStateOf(initialDate.isNotEmpty()) }
     var isTimeEnabled by remember { mutableStateOf(initialTime.isNotEmpty()) }
-    var isFlagged by remember { mutableStateOf(false) }
+    var isFlagged by remember { mutableStateOf(initialFlagged) }
     var priority by remember { mutableIntStateOf(0) }
     var isMenuExpanded by remember { mutableStateOf(false) }
 
@@ -54,10 +55,8 @@ fun DetailScreen(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         val allGranted = permissions.values.all { it }
-        if (allGranted) {
-            if (initialDate.isNotEmpty()) {
-                addEventToCalendarSilently(context, title, initialDate, initialTime)
-            }
+        if (allGranted && initialDate.isNotEmpty()) {
+            addEventToCalendarSilently(context, title, initialDate, initialTime)
         }
     }
 
@@ -66,20 +65,13 @@ fun DetailScreen(
         if (initialDate.isNotEmpty()) {
             try {
                 val parts = initialDate.split(".")
-                if (parts.size == 3) {
-                    calendar.set(parts[2].toInt(), parts[1].toInt() - 1, parts[0].toInt())
-                }
+                if (parts.size == 3) calendar.set(parts[2].toInt(), parts[1].toInt() - 1, parts[0].toInt())
             } catch (e: Exception) { }
         }
-        DatePickerDialog(
-            context,
-            { _, year, month, dayOfMonth ->
-                val newDate = "$dayOfMonth.${month + 1}.$year"
-                onDateSelected(newDate)
-                isDateEnabled = true
-            },
-            calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)
-        )
+        DatePickerDialog(context, { _, year, month, dayOfMonth ->
+            val newDate = "$dayOfMonth.${month + 1}.$year"
+            onDateSelected(newDate); isDateEnabled = true
+        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
     }
 
     val timePickerDialog = remember(initialTime) {
@@ -93,15 +85,10 @@ fun DetailScreen(
                 }
             } catch (e: Exception) { }
         }
-        TimePickerDialog(
-            context,
-            { _, hourOfDay, minute ->
-                val newTime = String.format("%02d:%02d", hourOfDay, minute)
-                onTimeSelected(newTime)
-                isTimeEnabled = true
-            },
-            calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true
-        )
+        TimePickerDialog(context, { _, hourOfDay, minute ->
+            val newTime = String.format("%02d:%02d", hourOfDay, minute)
+            onTimeSelected(newTime); isTimeEnabled = true
+        }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true)
     }
 
     Scaffold(
@@ -120,16 +107,12 @@ fun DetailScreen(
                     TextButton(onClick = {
                         val hasRead = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED
                         val hasWrite = ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED
-
                         if (hasRead && hasWrite) {
-                            if (initialDate.isNotEmpty()) {
-                                addEventToCalendarSilently(context, title, initialDate, initialTime)
-                            }
+                            if (initialDate.isNotEmpty()) addEventToCalendarSilently(context, title, initialDate, initialTime)
                         } else {
                             permissionLauncher.launch(arrayOf(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR))
                         }
-
-                        onSaveClick(priority)
+                        onSaveClick(priority, isFlagged)
                     }) {
                         Text("Добавить", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
@@ -139,29 +122,24 @@ fun DetailScreen(
         }
     ) { paddingValues ->
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp).verticalScroll(rememberScrollState())) {
-
             Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant), modifier = Modifier.fillMaxWidth()) {
                 Column {
                     Row(modifier = Modifier.fillMaxWidth().clickable { datePickerDialog.show() }.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Box(modifier = Modifier.size(28.dp).background(Color(0xFFFF453A), shape = RoundedCornerShape(6.dp)), contentAlignment = Alignment.Center) {
                             Icon(Icons.Default.DateRange, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                         }
-                        Spacer(Modifier.width(12.dp))
-                        Text("Дата", modifier = Modifier.weight(1f))
+                        Spacer(Modifier.width(12.dp)); Text("Дата", modifier = Modifier.weight(1f))
                         Text(if (initialDate.isEmpty()) "Не задано" else initialDate, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
-                        Spacer(Modifier.width(8.dp))
-                        Switch(checked = isDateEnabled, onCheckedChange = { isDateEnabled = it; if (it) datePickerDialog.show() })
+                        Spacer(Modifier.width(8.dp)); Switch(checked = isDateEnabled, onCheckedChange = { isDateEnabled = it; if (it) datePickerDialog.show() })
                     }
                     HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
                     Row(modifier = Modifier.fillMaxWidth().clickable { timePickerDialog.show() }.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Box(modifier = Modifier.size(28.dp).background(Color(0xFF0A84FF), shape = RoundedCornerShape(6.dp)), contentAlignment = Alignment.Center) {
                             Icon(Icons.Outlined.Schedule, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
                         }
-                        Spacer(Modifier.width(12.dp))
-                        Text("Время", modifier = Modifier.weight(1f))
+                        Spacer(Modifier.width(12.dp)); Text("Время", modifier = Modifier.weight(1f))
                         Text(if (initialTime.isEmpty()) "Не задано" else initialTime, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
-                        Spacer(Modifier.width(8.dp))
-                        Switch(checked = isTimeEnabled, onCheckedChange = { isTimeEnabled = it; if (it) timePickerDialog.show() })
+                        Spacer(Modifier.width(8.dp)); Switch(checked = isTimeEnabled, onCheckedChange = { isTimeEnabled = it; if (it) timePickerDialog.show() })
                     }
                 }
             }
@@ -173,8 +151,7 @@ fun DetailScreen(
                     Box(modifier = Modifier.size(28.dp).background(Color(0xFFFF9F0A), shape = RoundedCornerShape(6.dp)), contentAlignment = Alignment.Center) {
                         Icon(Icons.Default.Flag, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                     }
-                    Spacer(Modifier.width(12.dp))
-                    Text("Флажок", modifier = Modifier.weight(1f))
+                    Spacer(Modifier.width(12.dp)); Text("Флажок", modifier = Modifier.weight(1f))
                     Switch(checked = isFlagged, onCheckedChange = { isFlagged = it })
                 }
             }
@@ -186,8 +163,7 @@ fun DetailScreen(
                     Box(modifier = Modifier.size(28.dp).background(Color(0xFFFF3B30), shape = RoundedCornerShape(6.dp)), contentAlignment = Alignment.Center) {
                         Text("!", color = Color.White, fontWeight = FontWeight.Bold)
                     }
-                    Spacer(Modifier.width(12.dp))
-                    Text("Приоритет", modifier = Modifier.weight(1f))
+                    Spacer(Modifier.width(12.dp)); Text("Приоритет", modifier = Modifier.weight(1f))
                     val priorityText = when (priority) { 1 -> "Низкий"; 2 -> "Средний"; 3 -> "Высокий"; else -> "Нет" }
                     Text(priorityText, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
