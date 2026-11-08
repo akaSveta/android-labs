@@ -3,6 +3,7 @@ package com.example.lab2.data
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 import com.example.lab2.domain.Task
 import com.example.lab2.domain.TaskListEntity
 import kotlinx.coroutines.flow.Flow
@@ -12,8 +13,11 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE isDone = 0 ORDER BY priority DESC, title ASC")
     fun getAllTasks(): Flow<List<Task>>
 
-    @Query("SELECT * FROM tasks WHERE isDone = 0 ORDER BY priority DESC, title ASC")
-    suspend fun getActiveTasksDirectly(): List<Task>
+    @Query("SELECT * FROM tasks ORDER BY priority DESC, title ASC")
+    suspend fun getAllTasksForFiltering(): List<Task>
+
+    @Query("SELECT * FROM tasks WHERE id = :taskId")
+    suspend fun getTaskById(taskId: Long): Task?
 
     @Insert
     suspend fun insertTask(task: Task)
@@ -21,8 +25,8 @@ interface TaskDao {
     @Query("UPDATE tasks SET isDone = :isDone WHERE id = :taskId")
     suspend fun updateTaskStatus(taskId: Long, isDone: Boolean)
 
-    @Query("SELECT * FROM tasks ORDER BY priority DESC, title ASC")
-    suspend fun getAllTasksForFiltering(): List<Task>
+    @Update
+    suspend fun updateFullTask(task: Task)
 
     @Query("SELECT * FROM task_lists ORDER BY id ASC")
     fun getAllTaskLists(): Flow<List<TaskListEntity>>

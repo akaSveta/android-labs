@@ -30,10 +30,10 @@ fun ListScreen(
     listColor: Long,
     onBackClick: () -> Unit,
     onAddClick: () -> Unit,
+    onTaskClick: (Task) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val themeColor = Color(listColor)
-
     val displayTasks = remember { mutableStateListOf<Task>() }
     var isLoading by remember { mutableStateOf(true) }
 
@@ -77,7 +77,6 @@ fun ListScreen(
         floatingActionButtonPosition = FabPosition.Start
     ) { paddingValues ->
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-
             Text(
                 text = listTitle,
                 fontSize = 34.sp,
@@ -101,7 +100,8 @@ fun ListScreen(
                             task = task,
                             isDone = task.isDone,
                             themeColor = themeColor,
-                            onTaskClick = {
+                            onTaskClick = { onTaskClick(task) },
+                            onCheckboxClick = {
                                 if (listId != "5") {
                                     val updatedTask = task.copy(isDone = !task.isDone)
                                     displayTasks[index] = updatedTask
@@ -118,10 +118,11 @@ fun ListScreen(
 }
 
 @Composable
-fun TaskRow(task: Task, isDone: Boolean, themeColor: Color, onTaskClick: () -> Unit) {
+fun TaskRow(task: Task, isDone: Boolean, themeColor: Color, onTaskClick: () -> Unit, onCheckboxClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onTaskClick() }
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -129,7 +130,7 @@ fun TaskRow(task: Task, isDone: Boolean, themeColor: Color, onTaskClick: () -> U
             modifier = Modifier
                 .size(22.dp)
                 .background(Color.Transparent, shape = CircleShape)
-                .clickable { onTaskClick() }
+                .clickable { onCheckboxClick() }
                 .padding(2.dp)
         ) {
             Surface(
@@ -145,19 +146,8 @@ fun TaskRow(task: Task, isDone: Boolean, themeColor: Color, onTaskClick: () -> U
         Spacer(modifier = Modifier.width(12.dp))
 
         if (task.priority > 0 && !isDone) {
-            val text = when (task.priority) {
-                1 -> "!"
-                2 -> "!!"
-                3 -> "!!!"
-                else -> ""
-            }
-            Text(
-                text = text,
-                color = themeColor,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                modifier = Modifier.padding(end = 6.dp)
-            )
+            val text = when (task.priority) { 1 -> "!"; 2 -> "!!"; 3 -> "!!!"; else -> "" }
+            Text(text = text, color = themeColor, fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(end = 6.dp))
         }
 
         Column(modifier = Modifier.weight(1f)) {
@@ -166,28 +156,12 @@ fun TaskRow(task: Task, isDone: Boolean, themeColor: Color, onTaskClick: () -> U
                 fontSize = 16.sp,
                 color = if (isDone) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
             )
-
             if (task.notes.isNotEmpty() && !isDone) {
-                Text(
-                    text = task.notes,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp)
-                )
+                Text(text = task.notes, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 2.dp))
             }
-
             if ((task.dueDate.isNotEmpty() || task.dueTime.isNotEmpty()) && !isDone) {
-                val dateStr = task.dueDate
-                val timeStr = task.dueTime
-                val separator = if (dateStr.isNotEmpty() && timeStr.isNotEmpty()) ", " else ""
-
-                Text(
-                    text = "$dateStr$separator$timeStr",
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
+                val separator = if (task.dueDate.isNotEmpty() && task.dueTime.isNotEmpty()) ", " else ""
+                Text(text = "${task.dueDate}$separator${task.dueTime}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 4.dp))
             }
         }
     }

@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.lab2.domain.Task
 import com.example.lab2.ui.screens.*
 
 @Composable
@@ -14,6 +15,7 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val listViewModel: ListViewModel = viewModel()
 
+    var tempTaskId by remember { mutableStateOf<Long?>(null) }
     var tempTitle by remember { mutableStateOf("") }
     var tempNotes by remember { mutableStateOf("") }
     var tempDate by remember { mutableStateOf("") }
@@ -27,19 +29,25 @@ fun AppNavigation() {
 
     val saveAndGoBack = {
         if (tempTitle.isNotBlank()) {
-            listViewModel.addTask(tempTitle, tempNotes, tempPriority, tempDate, tempTime, tempListId)
-
-            tempTitle = ""
-            tempNotes = ""
-            tempPriority = 0
-            tempDate = ""
-            tempTime = ""
-
-            tempListId = "6"
-            tempListTitle = "Напоминания"
-            tempListColor = 0xFFFF9F0A
-            tempListIcon = "Menu"
-
+            if (tempTaskId == null) {
+                listViewModel.addTask(tempTitle, tempNotes, tempPriority, tempDate, tempTime, tempListId)
+            } else {
+                listViewModel.updateTask(
+                    Task(
+                        id = tempTaskId!!,
+                        title = tempTitle,
+                        notes = tempNotes,
+                        listId = tempListId,
+                        priority = tempPriority,
+                        dueDate = tempDate,
+                        dueTime = tempTime,
+                        isDone = false
+                    )
+                )
+            }
+            tempTaskId = null
+            tempTitle = ""; tempNotes = ""; tempPriority = 0; tempDate = ""; tempTime = ""
+            tempListId = "6"; tempListTitle = "Напоминания"; tempListColor = 0xFFFF9F0A; tempListIcon = "Menu"
             navController.popBackStack("home", inclusive = false)
         }
     }
@@ -50,6 +58,7 @@ fun AppNavigation() {
                 viewModel = listViewModel,
                 onListClick = { listId, title, color -> navController.navigate("list/$listId?title=$title&color=$color") },
                 onAddClick = {
+                    tempTaskId = null; tempTitle = ""; tempNotes = ""; tempDate = ""; tempTime = ""; tempPriority = 0
                     tempListId = "6"; tempListTitle = "Напоминания"; tempListColor = 0xFFFF9F0A; tempListIcon = "Menu"
                     navController.navigate("add")
                 },
@@ -77,7 +86,20 @@ fun AppNavigation() {
                 listColor = color,
                 onBackClick = { navController.popBackStack() },
                 onAddClick = {
+                    tempTaskId = null; tempTitle = ""; tempNotes = ""; tempDate = ""; tempTime = ""; tempPriority = 0
                     tempListId = listId; tempListTitle = title; tempListColor = color; tempListIcon = "Menu"
+                    navController.navigate("add")
+                },
+                onTaskClick = { task ->
+                    tempTaskId = task.id
+                    tempTitle = task.title
+                    tempNotes = task.notes
+                    tempDate = task.dueDate
+                    tempTime = task.dueTime
+                    tempPriority = task.priority
+                    tempListId = task.listId
+                    tempListTitle = title
+                    tempListColor = color
                     navController.navigate("add")
                 }
             )
@@ -85,6 +107,7 @@ fun AppNavigation() {
 
         composable("add") {
             AddEditReminderScreen(
+                taskId = tempTaskId,
                 initialTitle = tempTitle,
                 initialNotes = tempNotes,
                 initialDate = tempDate,
@@ -109,10 +132,7 @@ fun AppNavigation() {
                 onBackClick = { navController.popBackStack() },
                 onDateSelected = { tempDate = it },
                 onTimeSelected = { tempTime = it },
-                onSaveClick = { priority ->
-                    tempPriority = priority
-                    saveAndGoBack()
-                }
+                onSaveClick = { priority -> tempPriority = priority; saveAndGoBack() }
             )
         }
 
@@ -139,10 +159,7 @@ fun AppNavigation() {
         }
 
         composable("search") {
-            SearchScreen(
-                viewModel = listViewModel,
-                onBackClick = { navController.popBackStack() }
-            )
+            SearchScreen(viewModel = listViewModel, onBackClick = { navController.popBackStack() })
         }
     }
 }

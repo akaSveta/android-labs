@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditReminderScreen(
+    taskId: Long?,
     initialTitle: String,
     initialNotes: String,
     initialDate: String,
@@ -37,9 +38,9 @@ fun AddEditReminderScreen(
         modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
-                title = { Text("Новое напоминание", fontWeight = FontWeight.Bold) },
+                title = { Text(if (taskId == null) "Новое напоминание" else "Редактирование", fontWeight = FontWeight.Bold) },
                 navigationIcon = { TextButton(onClick = onCancelClick) { Text("Отмена", fontSize = 16.sp) } },
-                actions = { TextButton(onClick = onSaveClick) { Text("Добавить", fontSize = 16.sp, fontWeight = FontWeight.Bold) } },
+                actions = { TextButton(onClick = onSaveClick) { Text("Готово", fontSize = 16.sp, fontWeight = FontWeight.Bold) } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         }

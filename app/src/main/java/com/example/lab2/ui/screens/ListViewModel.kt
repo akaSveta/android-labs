@@ -20,17 +20,8 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
     fun addTaskList(title: String, color: Long, iconName: String) {
         viewModelScope.launch {
             val maxId = dao.getMaxTaskListId()
-
             val nextId = if (maxId == null || maxId < 6) 7L else maxId + 1
-
-            dao.insertTaskList(
-                TaskListEntity(
-                    id = nextId,
-                    title = title,
-                    color = color,
-                    iconName = iconName
-                )
-            )
+            dao.insertTaskList(TaskListEntity(id = nextId, title = title, color = color, iconName = iconName))
         }
     }
 
@@ -57,16 +48,13 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
 
     fun addTask(title: String, notes: String, priority: Int, dueDate: String, dueTime: String, targetListId: String) {
         viewModelScope.launch {
-            dao.insertTask(
-                Task(
-                    title = title,
-                    notes = notes,
-                    listId = targetListId,
-                    priority = priority,
-                    dueDate = dueDate,
-                    dueTime = dueTime
-                )
-            )
+            dao.insertTask(Task(title = title, notes = notes, listId = targetListId, priority = priority, dueDate = dueDate, dueTime = dueTime))
+        }
+    }
+
+    fun updateTask(task: Task) {
+        viewModelScope.launch {
+            dao.updateFullTask(task)
         }
     }
 
