@@ -74,4 +74,11 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
                     it.notes.contains(query, ignoreCase = true)
         }
     }
+
+    fun deleteTaskList(listId: Long) {
+        viewModelScope.launch {
+            dao.deleteTaskList(listId)
+            dao.deleteTasksInList(listId.toString())
+        }
+    }
 }

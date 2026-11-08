@@ -36,4 +36,10 @@ interface TaskDao {
 
     @Query("SELECT MAX(id) FROM task_lists")
     suspend fun getMaxTaskListId(): Long?
+
+    @Query("DELETE FROM task_lists WHERE id = :listId")
+    suspend fun deleteTaskList(listId: Long)
+
+    @Query("DELETE FROM tasks WHERE listId = :listId")
+    suspend fun deleteTasksInList(listId: String)
 }

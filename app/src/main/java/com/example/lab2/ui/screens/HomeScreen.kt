@@ -1,5 +1,6 @@
 package com.example.lab2.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -15,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lab2.data.MockData
@@ -49,10 +51,13 @@ fun HomeScreen(
     onAddClick: () -> Unit,
     onAddListClick: () -> Unit,
     onSearchClick: () -> Unit,
+    onDeleteList: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var allTasks by remember { mutableStateOf<List<Task>>(emptyList()) }
     var isLoaded by remember { mutableStateOf(false) }
+
+    var listToDelete by remember { mutableStateOf<Long?>(null) }
 
     val userLists by viewModel.taskLists.collectAsState(initial = emptyList())
 
@@ -168,11 +173,77 @@ fun HomeScreen(
                     taskCount = getCount(listEntity.id.toString()),
                     icon = getIconByName(listEntity.iconName)
                 )
-                MyListRow(list = list, onClick = { onListClick(list.id, list.title, list.iconColor) })
+
+                val dismissState = rememberSwipeToDismissBoxState(
+                    confirmValueChange = {
+                        if (it == SwipeToDismissBoxValue.EndToStart) {
+                            listToDelete = listEntity.id
+                            false
+                        } else {
+                            false
+                        }
+                    }
+                )
+
+                SwipeToDismissBox(
+                    state = dismissState,
+                    backgroundContent = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Red, shape = RoundedCornerShape(12.dp))
+                                .padding(horizontal = 20.dp),
+                            contentAlignment = Alignment.CenterEnd
+                        ) {
+                            Icon(Icons.Default.Delete, contentDescription = "Удалить", tint = Color.White)
+                        }
+                    },
+                    enableDismissFromStartToEnd = false
+                ) {
+                    MyListRow(list = list, onClick = { onListClick(list.id, list.title, list.iconColor) })
+                }
                 Spacer(Modifier.height(8.dp))
             }
 
             Spacer(Modifier.height(80.dp))
+        }
+
+        if (listToDelete != null) {
+            val listName = userLists.firstOrNull { it.id == listToDelete }?.title ?: "список"
+
+            AlertDialog(
+                onDismissRequest = { listToDelete = null },
+                title = {
+                    Text(
+                        text = "Удалить список «$listName»?",
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                text = {
+                    Text(
+                        text = "Данное действие приведет к удалению всех напоминаний в этом списке.",
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            onDeleteList(listToDelete!!)
+                            listToDelete = null
+                        }
+                    ) {
+                        Text("Удалить", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { listToDelete = null }) {
+                        Text("Отменить", color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            )
         }
     }
 }

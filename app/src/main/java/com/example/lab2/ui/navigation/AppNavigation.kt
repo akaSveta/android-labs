@@ -57,7 +57,10 @@ fun AppNavigation() {
                     navController.navigate("add")
                 },
                 onAddListClick = { navController.navigate("add_list") },
-                onSearchClick = { navController.navigate("search") }
+                onSearchClick = { navController.navigate("search") },
+                onDeleteList = { listId ->
+                    listViewModel.deleteTaskList(listId)
+                }
             )
         }
 
