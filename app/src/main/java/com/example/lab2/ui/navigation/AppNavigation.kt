@@ -1,0 +1,149 @@
+package com.example.lab2.ui.navigation
+
+import androidx.compose.runtime.*
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.lab2.domain.Task
+import com.example.lab2.ui.screens.*
+
+@Composable
+fun AppNavigation() {
+    val navController = rememberNavController()
+    val listViewModel: ListViewModel = viewModel()
+
+    var tempTaskId by remember { mutableStateOf<Long?>(null) }
+    var tempTitle by remember { mutableStateOf("") }
+    var tempNotes by remember { mutableStateOf("") }
+    var tempDate by remember { mutableStateOf("") }
+    var tempTime by remember { mutableStateOf("") }
+    var tempPriority by remember { mutableIntStateOf(0) }
+    var tempFlagged by remember { mutableStateOf(false) }
+
+    var tempListId by remember { mutableStateOf("6") }
+    var tempListTitle by remember { mutableStateOf("Напоминания") }
+    var tempListColor by remember { mutableLongStateOf(0xFFFF9F0A) }
+    var tempListIcon by remember { mutableStateOf("Menu") }
+
+    val saveAndGoBack = {
+        if (tempTitle.isNotBlank()) {
+            if (tempTaskId == null) {
+                listViewModel.addTask(tempTitle, tempNotes, tempPriority, tempDate, tempTime, tempListId, tempFlagged)
+            } else {
+                listViewModel.updateTask(
+                    Task(
+                        id = tempTaskId!!, title = tempTitle, notes = tempNotes, listId = tempListId,
+                        priority = tempPriority, dueDate = tempDate, dueTime = tempTime, isFlagged = tempFlagged, isDone = false
+                    )
+                )
+            }
+            tempTaskId = null; tempTitle = ""; tempNotes = ""; tempPriority = 0; tempDate = ""; tempTime = ""; tempFlagged = false
+            tempListId = "6"; tempListTitle = "Напоминания"; tempListColor = 0xFFFF9F0A; tempListIcon = "Menu"
+            navController.popBackStack("home", inclusive = false)
+        }
+    }
+
+    NavHost(navController = navController, startDestination = "home") {
+        composable("home") {
+            HomeScreen(
+                viewModel = listViewModel,
+                onListClick = { listId, title, color -> navController.navigate("list/$listId?title=$title&color=$color") },
+                onAddClick = {
+                    tempTaskId = null; tempTitle = ""; tempNotes = ""; tempDate = ""; tempTime = ""; tempPriority = 0; tempFlagged = false
+                    tempListId = "6"; tempListTitle = "Напоминания"; tempListColor = 0xFFFF9F0A; tempListIcon = "Menu"
+                    navController.navigate("add")
+                },
+                onAddListClick = { navController.navigate("add_list") },
+                onSearchClick = { navController.navigate("search") },
+                onDeleteList = { listId ->
+                    listViewModel.deleteTaskList(listId)
+                }
+            )
+        }
+
+        composable(
+            route = "list/{listId}?title={title}&color={color}",
+            arguments = listOf(
+                navArgument("listId") { type = NavType.StringType },
+                navArgument("title") { type = NavType.StringType; defaultValue = "Список" },
+                navArgument("color") { type = NavType.LongType; defaultValue = 0xFFFF9F0AL }
+            )
+        ) { backStackEntry ->
+            val listId = backStackEntry.arguments?.getString("listId") ?: ""
+            val title = backStackEntry.arguments?.getString("title") ?: "Список"
+            val color = backStackEntry.arguments?.getLong("color") ?: 0xFFFF9F0AL
+
+            ListScreen(
+                viewModel = listViewModel, listId = listId, listTitle = title, listColor = color,
+                onBackClick = { navController.popBackStack() },
+                onAddClick = {
+                    tempTaskId = null; tempTitle = ""; tempNotes = ""; tempDate = ""; tempTime = ""; tempPriority = 0; tempFlagged = false
+                    tempListId = listId; tempListTitle = title; tempListColor = color; tempListIcon = "Menu"
+                    navController.navigate("add")
+                },
+                onTaskClick = { task ->
+                    tempTaskId = task.id; tempTitle = task.title; tempNotes = task.notes
+                    tempDate = task.dueDate; tempTime = task.dueTime; tempPriority = task.priority
+                    tempFlagged = task.isFlagged
+                    tempListId = task.listId; tempListTitle = title; tempListColor = color
+                    navController.navigate("add")
+                }
+            )
+        }
+
+        composable("add") {
+            AddEditReminderScreen(
+                taskId = tempTaskId, initialTitle = tempTitle, initialNotes = tempNotes,
+                initialDate = tempDate, initialTime = tempTime,
+                selectedListTitle = tempListTitle, selectedListColor = tempListColor, selectedListIcon = tempListIcon,
+                onTitleChange = { tempTitle = it }, onNotesChange = { tempNotes = it },
+                onCancelClick = { navController.popBackStack() },
+                onSaveClick = { saveAndGoBack() },
+                onDetailsClick = { navController.navigate("details") },
+                onListClick = { navController.navigate("select_list") }
+            )
+        }
+
+        composable("details") {
+            DetailScreen(
+                title = tempTitle, initialDate = tempDate, initialTime = tempTime,
+                initialFlagged = tempFlagged,
+                onBackClick = { navController.popBackStack() },
+                onDateSelected = { tempDate = it }, onTimeSelected = { tempTime = it },
+                onSaveClick = { priority, flagged ->
+                    tempPriority = priority
+                    tempFlagged = flagged
+                    saveAndGoBack()
+                }
+            )
+        }
+
+        composable("add_list") {
+            AddListScreen(
+                onCancelClick = { navController.popBackStack() },
+                onSaveClick = { title, color, iconName ->
+                    listViewModel.addTaskList(title, color, iconName)
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable("select_list") {
+            SelectListScreen(
+                viewModel = listViewModel, currentListId = tempListId,
+                onBackClick = { navController.popBackStack() },
+                onListSelected = { id, title, color, iconName ->
+                    tempListId = id; tempListTitle = title; tempListColor = color; tempListIcon = iconName
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable("search") {
+            SearchScreen(viewModel = listViewModel, onBackClick = { navController.popBackStack() })
+        }
+    }
+}
