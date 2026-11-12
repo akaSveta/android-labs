@@ -16,9 +16,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.lab2.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,14 +56,18 @@ fun AddListScreen(
         modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
-                title = { Text("Новый список", fontWeight = FontWeight.Bold) },
-                navigationIcon = { TextButton(onClick = onCancelClick) { Text("Отмена", fontSize = 16.sp) } },
+                title = { Text(stringResource(R.string.new_list_title), fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    TextButton(onClick = onCancelClick) {
+                        Text(stringResource(R.string.cancel), fontSize = 16.sp)
+                    }
+                },
                 actions = {
                     TextButton(
                         onClick = { if (title.isNotBlank()) onSaveClick(title, selectedColor, selectedIcon.second) },
                         enabled = title.isNotBlank()
                     ) {
-                        Text("Готово", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.done), fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -100,7 +106,13 @@ fun AddListScreen(
                 TextField(
                     value = title,
                     onValueChange = { title = it },
-                    placeholder = { Text("Название списка", modifier = Modifier.fillMaxWidth(), textAlign = androidx.compose.ui.text.style.TextAlign.Center) },
+                    placeholder = {
+                        Text(
+                            stringResource(R.string.list_name_hint),
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    },
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent,
                         focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent
@@ -112,7 +124,7 @@ fun AddListScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            Text("Цвет", fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.align(Alignment.Start))
+            Text(stringResource(R.string.color), fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.align(Alignment.Start))
             Spacer(Modifier.height(8.dp))
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -138,7 +150,7 @@ fun AddListScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            Text("Иконка", fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.align(Alignment.Start))
+            Text(stringResource(R.string.icon), fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.align(Alignment.Start))
             Spacer(Modifier.height(8.dp))
 
             LazyVerticalGrid(

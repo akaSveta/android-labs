@@ -1,5 +1,6 @@
 package com.example.lab2.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -7,19 +8,21 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.lab2.R
 import com.example.lab2.data.MockData
 import com.example.lab2.domain.Task
 import com.example.lab2.domain.TaskList
-import androidx.compose.material.icons.filled.Check
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,7 +33,6 @@ fun SearchScreen(
 ) {
     var query by remember { mutableStateOf("") }
     var results by remember { mutableStateOf<List<Task>>(emptyList()) }
-
     val userLists by viewModel.taskLists.collectAsState(initial = emptyList())
 
     val allLists = remember(userLists) {
@@ -60,7 +62,7 @@ fun SearchScreen(
                     TextField(
                         value = query,
                         onValueChange = { query = it },
-                        placeholder = { Text("Поиск", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                        placeholder = { Text(stringResource(R.string.search), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
                             unfocusedContainerColor = Color.Transparent,
@@ -72,13 +74,13 @@ fun SearchScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = MaterialTheme.colorScheme.primary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     }
                 },
                 actions = {
                     if (query.isNotEmpty()) {
                         IconButton(onClick = { query = "" }) {
-                            Icon(Icons.Default.Close, contentDescription = "Очистить", tint = MaterialTheme.colorScheme.primary)
+                            Icon(Icons.Default.Close, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         }
                     }
                 },
@@ -89,18 +91,21 @@ fun SearchScreen(
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             if (query.isBlank()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Введите текст для поиска", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.search_hint), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             } else if (results.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Ничего не найдено", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.nothing_found), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             } else {
+                val defaultListTitle = stringResource(R.string.reminders)
+
                 LazyColumn {
                     groupedResults.forEach { (listId, tasksInList) ->
                         val listInfo = allLists.firstOrNull { it.id == listId }
                         val listColor = Color(listInfo?.iconColor ?: 0xFFFF9F0A)
-                        val listTitle = listInfo?.title ?: "Напоминания"
+
+                        val listTitle = listInfo?.title ?: defaultListTitle
 
                         item {
                             Text(
@@ -142,7 +147,7 @@ fun SearchResultRow(task: Task, themeColor: Color) {
                 Surface(
                     shape = CircleShape,
                     color = Color.Transparent,
-                    border = androidx.compose.foundation.BorderStroke(1.5.dp, MaterialTheme.colorScheme.onSurfaceVariant),
+                    border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.onSurfaceVariant),
                     modifier = Modifier.fillMaxSize()
                 ) {}
             } else {

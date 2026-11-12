@@ -15,10 +15,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.lab2.R
 import com.example.lab2.data.MockData
 import com.example.lab2.domain.Task
 import com.example.lab2.domain.TaskList
@@ -52,11 +54,11 @@ fun HomeScreen(
     onAddListClick: () -> Unit,
     onSearchClick: () -> Unit,
     onDeleteList: (Long) -> Unit,
+    onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var allTasks by remember { mutableStateOf<List<Task>>(emptyList()) }
     var isLoaded by remember { mutableStateOf(false) }
-
     var listToDelete by remember { mutableStateOf<Long?>(null) }
 
     val userLists by viewModel.taskLists.collectAsState(initial = emptyList())
@@ -84,6 +86,15 @@ fun HomeScreen(
         }
     }
 
+    val listNames = mapOf(
+        "1" to stringResource(R.string.today),
+        "2" to stringResource(R.string.scheduled),
+        "3" to stringResource(R.string.all),
+        "4" to stringResource(R.string.flagged),
+        "5" to stringResource(R.string.completed),
+        "6" to stringResource(R.string.reminders)
+    )
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface,
@@ -101,10 +112,10 @@ fun HomeScreen(
                         Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(24.dp))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Напоминание", color = MaterialTheme.colorScheme.primary, fontSize = 18.sp, fontWeight = FontWeight.Medium)
+                    Text(stringResource(R.string.reminder), color = MaterialTheme.colorScheme.primary, fontSize = 18.sp, fontWeight = FontWeight.Medium)
                 }
                 Text(
-                    "Добавить", color = MaterialTheme.colorScheme.primary, fontSize = 18.sp, fontWeight = FontWeight.Medium,
+                    stringResource(R.string.add), color = MaterialTheme.colorScheme.primary, fontSize = 18.sp, fontWeight = FontWeight.Medium,
                     modifier = Modifier.clickable { onAddListClick() }.padding(8.dp)
                 )
             }
@@ -115,8 +126,8 @@ fun HomeScreen(
             modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 16.dp).verticalScroll(rememberScrollState())
         ) {
             Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 8.dp), horizontalArrangement = Arrangement.End) {
-                IconButton(onClick = { /* TODO: Настройки */ }) {
-                    Icon(Icons.Default.Settings, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(28.dp))
+                IconButton(onClick = onSettingsClick) {
+                    Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(28.dp))
                 }
             }
 
@@ -132,7 +143,7 @@ fun HomeScreen(
                 ) {
                     Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Поиск", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                    Text(stringResource(R.string.search), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                 }
             }
 
@@ -143,9 +154,9 @@ fun HomeScreen(
                     rowItems.forEach { list ->
                         Box(modifier = Modifier.weight(1f)) {
                             val realCount = getCount(list.id)
-                            val updatedList = list.copy(taskCount = realCount)
+                            val translatedList = list.copy(title = listNames[list.id] ?: list.title, taskCount = realCount)
 
-                            SmallListCard(list = updatedList, onClick = { onListClick(list.id, list.title, list.iconColor) })
+                            SmallListCard(list = translatedList, onClick = { onListClick(list.id, translatedList.title, list.iconColor) })
                         }
                     }
                     if (rowItems.size == 1) Spacer(modifier = Modifier.weight(1f))
@@ -154,14 +165,14 @@ fun HomeScreen(
             }
 
             Spacer(Modifier.height(24.dp))
-            Text("Мои списки", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text(stringResource(R.string.my_lists), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             Spacer(Modifier.height(12.dp))
 
             val baseMyList = MockData.myLists.firstOrNull { it.id == "6" }
             if (baseMyList != null) {
                 val realCount = getCount("6")
-                val updatedList = baseMyList.copy(taskCount = realCount)
-                MyListRow(list = updatedList, onClick = { onListClick(updatedList.id, updatedList.title, updatedList.iconColor) })
+                val translatedList = baseMyList.copy(title = listNames["6"] ?: baseMyList.title, taskCount = realCount)
+                MyListRow(list = translatedList, onClick = { onListClick(translatedList.id, translatedList.title, translatedList.iconColor) })
                 Spacer(Modifier.height(8.dp))
             }
 
@@ -179,9 +190,7 @@ fun HomeScreen(
                         if (it == SwipeToDismissBoxValue.EndToStart) {
                             listToDelete = listEntity.id
                             false
-                        } else {
-                            false
-                        }
+                        } else false
                     }
                 )
 
@@ -189,13 +198,10 @@ fun HomeScreen(
                     state = dismissState,
                     backgroundContent = {
                         Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Red, shape = RoundedCornerShape(12.dp))
-                                .padding(horizontal = 20.dp),
+                            modifier = Modifier.fillMaxSize().background(Color.Red, shape = RoundedCornerShape(12.dp)).padding(horizontal = 20.dp),
                             contentAlignment = Alignment.CenterEnd
                         ) {
-                            Icon(Icons.Default.Delete, contentDescription = "Удалить", tint = Color.White)
+                            Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.White)
                         }
                     },
                     enableDismissFromStartToEnd = false
@@ -209,13 +215,12 @@ fun HomeScreen(
         }
 
         if (listToDelete != null) {
-            val listName = userLists.firstOrNull { it.id == listToDelete }?.title ?: "список"
-
+            val listName = userLists.firstOrNull { it.id == listToDelete }?.title ?: ""
             AlertDialog(
                 onDismissRequest = { listToDelete = null },
                 title = {
                     Text(
-                        text = "Удалить список «$listName»?",
+                        text = stringResource(R.string.delete_list_title, listName),
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
@@ -223,24 +228,19 @@ fun HomeScreen(
                 },
                 text = {
                     Text(
-                        text = "Данное действие приведет к удалению всех напоминаний в этом списке.",
+                        text = stringResource(R.string.delete_list_text),
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
                 },
                 confirmButton = {
-                    TextButton(
-                        onClick = {
-                            onDeleteList(listToDelete!!)
-                            listToDelete = null
-                        }
-                    ) {
-                        Text("Удалить", color = MaterialTheme.colorScheme.error)
+                    TextButton(onClick = { onDeleteList(listToDelete!!); listToDelete = null }) {
+                        Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { listToDelete = null }) {
-                        Text("Отменить", color = MaterialTheme.colorScheme.primary)
+                        Text(stringResource(R.string.cancel_action), color = MaterialTheme.colorScheme.primary)
                     }
                 }
             )

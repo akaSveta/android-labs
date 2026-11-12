@@ -41,7 +41,7 @@ fun AppNavigation() {
                 )
             }
             tempTaskId = null; tempTitle = ""; tempNotes = ""; tempPriority = 0; tempDate = ""; tempTime = ""; tempFlagged = false
-            tempListId = "6"; tempListTitle = "Напоминания"; tempListColor = 0xFFFF9F0A; tempListIcon = "Menu"
+            tempListId = "6"; tempListTitle = ""; tempListColor = 0xFFFF9F0A; tempListIcon = "Menu"
             navController.popBackStack("home", inclusive = false)
         }
     }
@@ -53,14 +53,15 @@ fun AppNavigation() {
                 onListClick = { listId, title, color -> navController.navigate("list/$listId?title=$title&color=$color") },
                 onAddClick = {
                     tempTaskId = null; tempTitle = ""; tempNotes = ""; tempDate = ""; tempTime = ""; tempPriority = 0; tempFlagged = false
-                    tempListId = "6"; tempListTitle = "Напоминания"; tempListColor = 0xFFFF9F0A; tempListIcon = "Menu"
+                    tempListId = "6"; tempListTitle = ""; tempListColor = 0xFFFF9F0A; tempListIcon = "Menu"
                     navController.navigate("add")
                 },
                 onAddListClick = { navController.navigate("add_list") },
                 onSearchClick = { navController.navigate("search") },
                 onDeleteList = { listId ->
                     listViewModel.deleteTaskList(listId)
-                }
+                },
+                onSettingsClick = { navController.navigate("settings") }
             )
         }
 
@@ -144,6 +145,10 @@ fun AppNavigation() {
 
         composable("search") {
             SearchScreen(viewModel = listViewModel, onBackClick = { navController.popBackStack() })
+        }
+
+        composable("settings") {
+            SettingsScreen(onBackClick = { navController.popBackStack() })
         }
     }
 }

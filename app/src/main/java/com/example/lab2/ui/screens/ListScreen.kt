@@ -17,9 +17,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.lab2.R
 import com.example.lab2.domain.Task
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,7 +52,7 @@ fun ListScreen(
                     Row(modifier = Modifier.clickable { onBackClick() }.padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Списки", color = MaterialTheme.colorScheme.primary, fontSize = 17.sp)
+                        Text(stringResource(R.string.back), color = MaterialTheme.colorScheme.primary, fontSize = 17.sp)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -63,7 +65,7 @@ fun ListScreen(
                         Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(24.dp))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Напоминание", color = themeColor, fontSize = 18.sp, fontWeight = FontWeight.Medium)
+                    Text(stringResource(R.string.reminder), color = themeColor, fontSize = 18.sp, fontWeight = FontWeight.Medium)
                 }
             }
         },
@@ -75,7 +77,9 @@ fun ListScreen(
             if (isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = themeColor) }
             } else if (displayTasks.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Нет напоминаний", color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(stringResource(R.string.no_reminders), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 100.dp)) {
                     itemsIndexed(displayTasks) { index, task ->
@@ -134,7 +138,7 @@ fun TaskRow(task: Task, isDone: Boolean, themeColor: Color, onTaskClick: () -> U
                 imageVector = Icons.Default.Flag,
                 contentDescription = null,
                 tint = themeColor,
-                modifier = Modifier.size(32.dp).padding(start = 8.dp)
+                modifier = Modifier.padding(start = 8.dp).size(20.dp)
             )
         }
     }
