@@ -13,7 +13,7 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE isDone = 0 ORDER BY priority DESC, title ASC")
     fun getAllTasks(): Flow<List<Task>>
 
-    @Query("SELECT * FROM tasks ORDER BY priority DESC, title ASC")
+    @Query("SELECT * FROM tasks ORDER BY isFlagged DESC, priority DESC, title ASC")
     suspend fun getAllTasksForFiltering(): List<Task>
 
     @Query("SELECT * FROM tasks WHERE id = :taskId")
